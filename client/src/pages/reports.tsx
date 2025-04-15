@@ -48,25 +48,25 @@ export default function Reports() {
   
   // Get the current user directly using React Query instead of useAuth hook
   const { data: user } = useQuery<User | null>({
-    queryKey: ["/api/user"],
+    queryKey: ["/api/user/"],
     queryFn: getQueryFn({ on401: "returnNull" })
   });
   
   // Fetch user's CSV uploads
   const { data: csvUploads, isLoading: isLoadingCsvUploads, refetch: refetchCsvUploads } = useQuery({
-    queryKey: ['/api/csv-uploads'],
+    queryKey: ['/api/upload-csv/'],
     enabled: !!user,
   });
 
   // Fetch metrics data
   const { data: metrics, isLoading: isLoadingMetrics, refetch: refetchMetrics } = useQuery({
-    queryKey: ['/api/metrics'],
+    queryKey: ['/api/metrics/'],
     enabled: !!user,
   });
   
   // Fetch campaigns data for filtering
   const { data: campaigns } = useQuery({
-    queryKey: ['/api/campaigns'],
+    queryKey: ['/api/campaigns/'],
     enabled: !!user,
   });
   
@@ -75,7 +75,7 @@ export default function Reports() {
     mutationFn: async (csvUploadId: number) => {
       console.log(`Attempting to delete CSV upload with ID: ${csvUploadId}`);
       try {
-        const response = await apiRequest('DELETE', `/api/csv-uploads/${csvUploadId}`);
+        const response = await apiRequest('DELETE', `/api/upload-csv/${csvUploadId}`);
         console.log(`Delete response:`, response);
         return response;
       } catch (error) {
@@ -87,8 +87,8 @@ export default function Reports() {
       // Directly refetch data instead of just invalidating queries
       console.log("CSV delete successful, refetching data...");
       // Force invalidation of queries to ensure fresh data
-      queryClient.invalidateQueries({ queryKey: ['/api/csv-uploads'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/upload-csv/'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/metrics/'] });
       
       // Then refetch to update UI immediately
       await refetchCsvUploads();
@@ -314,7 +314,7 @@ export default function Reports() {
                                       const newCsvUploads = csvUploads?.filter(
                                         (csv: any) => csv.id !== upload.id
                                       );
-                                      queryClient.setQueryData(['/api/csv-uploads'], newCsvUploads);
+                                      queryClient.setQueryData(['/api/upload-csv'], newCsvUploads);
                                     }
                                   }}
                                 >

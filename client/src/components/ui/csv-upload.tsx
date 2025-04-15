@@ -49,7 +49,7 @@ export default function CsvUpload() {
       }, 200);
 
       try {
-        const response = await fetch("/api/upload-csv", {
+        const response = await fetch("/api/upload-csv/", {
           method: "POST",
           body: formData,
           credentials: "include",
@@ -81,7 +81,7 @@ export default function CsvUpload() {
       setUploadProgress(100);
       
       // Force cache invalidation before processing
-      queryClient.invalidateQueries({ queryKey: ['/api/csv-uploads'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/upload-csv/'] });
       
       // Give a small delay to allow the cache to refresh
       setTimeout(() => {

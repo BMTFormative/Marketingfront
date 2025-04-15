@@ -18,7 +18,7 @@ export default function UploadCsv() {
   
   // Fetch user's CSV uploads
   const { data: csvUploads, isLoading } = useQuery({
-    queryKey: ['/api/csv-uploads'],
+    queryKey: ['/api/upload-csv'],
     enabled: !!user,
   });
 

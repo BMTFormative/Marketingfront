@@ -63,25 +63,25 @@ const COLORS = ['#1976d2', '#9c27b0', '#2e7d32', '#ed6c02'];
 export default function Dashboard() {
   // Get the current user using React Query
   const { data: user } = useQuery<User | null>({
-    queryKey: ["/api/user"],
+    queryKey: ["/api/user/"],
     queryFn: getQueryFn({ on401: "returnNull" })
   });
 
   // Fetch metrics
   const { data: metrics, isLoading: isLoadingMetrics } = useQuery<any>({
-    queryKey: ['/api/metrics'],
+    queryKey: ['/api/metrics/'],
     enabled: !!user,
   });
 
   // Fetch insights
   const { data: insights, isLoading: isLoadingInsights } = useQuery<any[]>({
-    queryKey: ['/api/insights'],
+    queryKey: ['/api/insights/'],
     enabled: !!user,
   });
 
   // Fetch campaigns
   const { data: campaigns, isLoading: isLoadingCampaigns } = useQuery<any[]>({
-    queryKey: ['/api/campaigns'],
+    queryKey: ['/api/campaigns/'],
     enabled: !!user,
   });
 
