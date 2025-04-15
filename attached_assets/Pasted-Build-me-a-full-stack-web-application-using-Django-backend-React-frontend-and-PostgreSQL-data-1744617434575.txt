@@ -1,0 +1,94 @@
+Build me a full-stack web application using Django (backend), React (frontend), and PostgreSQL (database).
+
+The theme is based on a CSV template containing marketing data (I'll upload it later). The system should:
+
+Import and store CSV data in the database.
+
+Calculate marketing metrics such as conversion rate, CTR, ROI, and others.
+
+Expose API endpoints that return calculated metrics and support role-based access control (admin/client).
+
+After metric calculations, initiate a processing step to send data to api.ai  for natural language conclusions (I'll provide/configure the API key).
+
+Return both visual graphs (using Chart.js or Recharts) and natural language summaries based on the metrics.
+
+👥 User Roles:
+Admin:
+
+Can create and manage client accounts.
+
+Assign profiles and configure global app settings.
+
+Manage the api.ai API key.
+
+View all client data.
+
+Set and manage subscription expiration.
+
+Client:
+
+Can log in and upload/view their own marketing CSV data.
+
+View only their own reports.
+
+Access metrics, graphs, and generated conclusions.
+
+Must not see any other client’s data.
+
+🎨 Frontend (React.js):
+Build with React.js and Material UI (MUI) for a modern, professional admin dashboard.
+
+Design should include:
+
+Responsive sidebar with icons (MUI icons).
+
+Beautiful color themes (light/dark modes).
+
+Smooth animations and transitions.
+
+Snackbar/toast notifications for actions (success, error, etc.).
+
+Polished dashboard UI with graphs, metric cards, and CSV upload interface.
+
+Authentication pages (login/register).
+
+Use Recharts or Chart.js for displaying interactive data visualizations.
+
+🛠️ Backend (Django):
+Use Django and Django REST Framework (DRF).
+
+PostgreSQL as the database.
+
+Implement JWT authentication.
+
+Setup role-based permission system for admin and client.
+
+Create API endpoints to:
+
+Upload CSVs.
+
+Fetch metrics.
+
+Handle user management (for admin).
+
+Connect with api.ai for text generation.
+
+🚀 Deployment & Portability:
+Structure the project with two folders: backend/ and frontend/.
+
+Each part should be independently runnable.
+
+Add .env configuration files for environment settings.
+
+Ensure I can download and copy the project to my Windows environment with clear instructions to run:
+
+Backend with: python, pip, venv
+
+Frontend with: npm or yarn
+
+Bonus:
+Provide a modern and clean layout similar to Material UI admin templates (like MUI Dashboard or Mantis UI).
+
+Code should be modular, maintainable, and easy to extend.
+
+Use async actions where applicable for better UX.
