@@ -1,4 +1,32 @@
-// Define types for the API responses
+// Define proper types for the API responses
+interface MarketingMetric {
+  id: number;
+  platform: string;
+  date: string;
+  campaign_name: string;
+  impressions: number;
+  clicks: number;
+  conversions: number;
+  cost: string | number;
+  revenue: string | number;
+  roi: string | number | null;
+  ctr: string | number | null;
+  conversion_rate: string | number | null;
+  cost_per_click: string | number | null;
+  cost_per_conversion: string | number | null;
+  user: number;
+  csv_upload: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface MetricsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: MarketingMetric[];
+}
+
 interface CsvUpload {
   id: number;
   filename: string;
@@ -18,6 +46,7 @@ interface CsvUploadResponse {
   max_size: string;
   uploads: CsvUpload[];
 }
+
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
@@ -80,11 +109,15 @@ export default function Reports() {
 
   // Extract uploads array from the response
   const csvUploads = csvUploadResponse?.uploads || [];
-  // Fetch metrics data
-  const { data: metrics, isLoading: isLoadingMetrics, refetch: refetchMetrics } = useQuery({
+  
+  // Fetch metrics data - Updated to handle paginated response
+  const { data: metricsResponse, isLoading: isLoadingMetrics, refetch: refetchMetrics } = useQuery<MetricsResponse>({
     queryKey: ['/api/metrics/'],
     enabled: !!user,
   });
+  console
+  // Extract metrics array from the paginated response
+  const metricsData = metricsResponse?.results || [];
   
   // Fetch campaigns data for filtering
   const { data: campaigns } = useQuery({
@@ -154,37 +187,33 @@ export default function Reports() {
   }, [selectedCsvId]);
 
   // Determine if we have data to display based on selected CSV
-  const hasData = selectedCsvId !== null && metrics && Array.isArray(metrics) && 
-                  metrics.some(m => m.csvUploadId === selectedCsvId);
+  const hasData = selectedCsvId !== null && csvUploads && csvUploads.some(upload => 
+    upload.id === selectedCsvId && upload.processed);
   
-  // Filter metrics for the selected CSV file
+  // Filter metrics for the selected CSV file - Updated to use correct field name
   const selectedMetrics = useMemo(() => {
-    if (!selectedCsvId || !metrics || !Array.isArray(metrics)) return [];
-    return metrics.filter(m => m.csvUploadId === selectedCsvId);
-  }, [metrics, selectedCsvId]);
+    if (!selectedCsvId || !metricsData || !Array.isArray(metricsData)) return [];
+    return metricsData.filter(m => m.csv_upload === selectedCsvId);
+  }, [metricsData, selectedCsvId]);
   
-  // Format metrics data for charts
+  // Format metrics data for charts - Updated to use correct field names
   const formattedMetrics = useMemo(() => {
     if (!hasData || selectedMetrics.length === 0) return [];
     
-    // Use a single campaign name for all data
-    return selectedMetrics.map((metric: any, index: number) => ({
+    return selectedMetrics.map((metric) => ({
       id: metric.id,
-      // Use the actual filename from the selected CSV as the campaign name
-      campaignName: "Company Marketing Campaign",
-      date: new Date(metric.createdAt).toLocaleDateString(),
-      platform: "All Platforms",
-      // Use the metrics we actually have
-      conversionRate: parseFloat(metric.conversionRate),
-      clickThroughRate: parseFloat(metric.clickThroughRate),
-      roi: parseFloat(metric.roi),
-      averageCpc: parseFloat(metric.averageCpc),
-      // Generate reasonable approximations for display
-      impressions: 1000 * (index + 1), 
-      clicks: 50 * (index + 1),
-      conversions: parseFloat(metric.conversionRate) * 0.5,
-      cost: parseFloat(metric.averageCpc) * 50 * (index + 1),
-      revenue: parseFloat(metric.roi) * parseFloat(metric.averageCpc) * 50 * (index + 1) / 100
+      campaignName: metric.campaign_name,
+      date: new Date(metric.date).toLocaleDateString(),
+      platform: metric.platform,
+      conversionRate: metric.conversion_rate ? parseFloat(metric.conversion_rate.toString()) : 0,
+      clickThroughRate: metric.ctr ? parseFloat(metric.ctr.toString()) : 0,
+      roi: metric.roi ? parseFloat(metric.roi.toString()) : 0,
+      averageCpc: metric.cost_per_click ? parseFloat(metric.cost_per_click.toString()) : 0,
+      impressions: metric.impressions,
+      clicks: metric.clicks,
+      conversions: metric.conversions,
+      cost: parseFloat(metric.cost.toString()),
+      revenue: parseFloat(metric.revenue.toString())
     }));
   }, [selectedMetrics, hasData]);
   
@@ -431,7 +460,8 @@ export default function Reports() {
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedMetrics.map((metric: any, index: number) => (
+                  {paginatedMetrics.length > 0 ? (
+                    paginatedMetrics.map((metric: any, index: number) => (
                       <tr 
                         key={metric.id} 
                         className={index % 2 === 0 ? "bg-background" : "bg-muted/30"}
@@ -447,8 +477,15 @@ export default function Reports() {
                         <td className="p-3 text-left">${metric.cost.toFixed(2)}</td>
                         <td className="p-3 text-left">${metric.revenue.toFixed(2)}</td>
                       </tr>
-                    ))}
-                  </tbody>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={10} className="p-4 text-center text-muted-foreground">
+                        No data available
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
                 </table>
               </div>
               
