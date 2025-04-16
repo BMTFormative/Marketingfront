@@ -1,3 +1,23 @@
+// Define types for the API responses
+interface CsvUpload {
+  id: number;
+  filename: string;
+  file_path: string;
+  processed: boolean;
+  row_count: number;
+  user: number;
+  uploaded_at: string;
+  processed_at: string | null;
+  formatted_uploaded_at: string;
+  formatted_processed_at: string | null;
+}
+
+interface CsvUploadResponse {
+  message: string;
+  allowed_formats: string;
+  max_size: string;
+  uploads: CsvUpload[];
+}
 import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
@@ -53,11 +73,13 @@ export default function Reports() {
   });
   
   // Fetch user's CSV uploads
-  const { data: csvUploads, isLoading: isLoadingCsvUploads, refetch: refetchCsvUploads } = useQuery({
+  const { data: csvUploadResponse, isLoading: isLoadingCsvUploads, refetch: refetchCsvUploads } = useQuery<CsvUploadResponse>({
     queryKey: ['/api/upload-csv/'],
     enabled: !!user,
   });
 
+  // Extract uploads array from the response
+  const csvUploads = csvUploadResponse?.uploads || [];
   // Fetch metrics data
   const { data: metrics, isLoading: isLoadingMetrics, refetch: refetchMetrics } = useQuery({
     queryKey: ['/api/metrics/'],
@@ -73,10 +95,8 @@ export default function Reports() {
   // Delete CSV mutation
   const deleteCsvMutation = useMutation({
     mutationFn: async (csvUploadId: number) => {
-      console.log(`Attempting to delete CSV upload with ID: ${csvUploadId}`);
       try {
-        const response = await apiRequest('DELETE', `/api/upload-csv/${csvUploadId}`);
-        console.log(`Delete response:`, response);
+        const response = await apiRequest('DELETE', `/api/delete-csv/${csvUploadId}`);
         return response;
       } catch (error) {
         console.error(`Delete error:`, error);
@@ -84,15 +104,8 @@ export default function Reports() {
       }
     },
     onSuccess: async () => {
-      // Directly refetch data instead of just invalidating queries
-      console.log("CSV delete successful, refetching data...");
-      // Force invalidation of queries to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['/api/upload-csv/'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/metrics/'] });
-      
-      // Then refetch to update UI immediately
       await refetchCsvUploads();
-      await refetchMetrics();
       
       toast({
         title: "Success",
@@ -100,7 +113,6 @@ export default function Reports() {
         variant: "default",
       });
       
-      // Ensure selected CSV ID is cleared if it was deleted
       setSelectedCsvId(null);
     },
     onError: (error: Error) => {
@@ -275,7 +287,7 @@ export default function Reports() {
                                     {upload.filename}
                                   </div>
                                   <div className="text-xs text-muted-foreground">
-                                    {format(new Date(upload.uploadedAt), 'MMM d, yyyy')}
+                                  {upload.formatted_uploaded_at || 'Unknown date'}
                                   </div>
                                 </div>
                               </div>

@@ -1,3 +1,23 @@
+// Define types for the API responses
+interface CsvUpload {
+  id: number;
+  filename: string;
+  file_path: string;
+  processed: boolean;
+  row_count: number;
+  user: number;
+  uploaded_at: string;
+  processed_at: string | null;
+  formatted_uploaded_at: string;
+  formatted_processed_at: string | null;
+}
+
+interface CsvUploadsResponse {
+  message: string;
+  allowed_formats: string;
+  max_size: string;
+  uploads: CsvUpload[];
+}
 import DashboardLayout from "@/components/layouts/dashboard-layout";
 import CsvUpload from "@/components/ui/csv-upload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,10 +37,13 @@ export default function UploadCsv() {
   });
   
   // Fetch user's CSV uploads
-  const { data: csvUploads, isLoading } = useQuery({
-    queryKey: ['/api/upload-csv'],
+  const { data: csvUploadsResponse, isLoading } = useQuery<CsvUploadsResponse>({
+    queryKey: ['/api/upload-csv/'],
     enabled: !!user,
   });
+
+  // Extract uploads array from the response
+  const csvUploads = csvUploadsResponse?.uploads || [];
 
   return (
     <DashboardLayout>
@@ -147,7 +170,7 @@ export default function UploadCsv() {
                         <div>
                           <div className="font-medium">{upload.filename}</div>
                           <div className="text-xs text-muted-foreground">
-                            {format(new Date(upload.uploadedAt), 'MMM d, yyyy')}
+                            {upload.formatted_uploaded_at || 'Unknown date'}
                           </div>
                         </div>
                       </div>
