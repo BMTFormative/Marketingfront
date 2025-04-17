@@ -115,7 +115,7 @@ export default function Reports() {
     queryKey: ['/api/metrics/'],
     enabled: !!user,
   });
-  console
+  
   // Extract metrics array from the paginated response
   const metricsData = metricsResponse?.results || [];
   
@@ -189,7 +189,7 @@ export default function Reports() {
   // Determine if we have data to display based on selected CSV
   const hasData = selectedCsvId !== null && csvUploads && csvUploads.some(upload => 
     upload.id === selectedCsvId && upload.processed);
-  
+ 
   // Filter metrics for the selected CSV file - Updated to use correct field name
   const selectedMetrics = useMemo(() => {
     if (!selectedCsvId || !metricsData || !Array.isArray(metricsData)) return [];
@@ -199,7 +199,6 @@ export default function Reports() {
   // Format metrics data for charts - Updated to use correct field names
   const formattedMetrics = useMemo(() => {
     if (!hasData || selectedMetrics.length === 0) return [];
-    
     return selectedMetrics.map((metric) => ({
       id: metric.id,
       campaignName: metric.campaign_name,
